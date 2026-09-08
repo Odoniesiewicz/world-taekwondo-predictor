@@ -1,4 +1,5 @@
 import requests
+import pandas as pd
 from bs4 import BeautifulSoup
 
 URL = "https://results.worldtaekwondo.org/competitions/2024-paris-olympic-games/results"
@@ -14,14 +15,18 @@ rows=soup.find_all("tr")
 #print(response.url)
 #print(response.history)
 #tables = soup.find_all("table")
-row = rows[1]
-lis=[]
 current_round = None
 current_weight = None
 fight_records = []
-for row in rows[0:5]:
+for row in rows:
     cells = row.find_all("td")
     row_list = []
+    winner=None
+    #print(cells[3].get("class"), cells[6].get("class"))
+    if "winner" in cells[3].get("class", []) :
+        winner = cells[3].get_text(strip=True)
+    else:
+        winner = cells[6].get_text(strip=True)
     for cell in cells:
         row_list.append(cell.get_text(strip=True))
         #print(cell.get_text(strip=True))
@@ -41,10 +46,22 @@ for row in rows[0:5]:
         "score" : row_list[4],
         "method" : row_list[5],
         "fighter_b" : row_list[6],
-        "fighter_b_country" : row_list[7]
+        "fighter_b_country" : row_list[7],
+        "winner" : winner
     }
     fight_records.append(fight)
-    #lis.append(row_list)
-    #print(len(row_list), row_list)
-#print(lis)
-print(fight_records)
+df = pd.DataFrame(fight_records)
+#cleaned_df = 
+#print(df.shape)
+#print(df.columns)
+#print(df.head())
+#print(df.groupby("weight_category").size())
+#print(df["round"].unique())
+#print(df["weight_category"].unique())
+#print(df.isna().sum())
+invalid_winners = (df["winner"] == "")
+
+
+df=df[~invalid_winners]
+print((df == "").sum())
+df.to_csv("data/raw/paris_2024_fights_clean.csv", index=False)
