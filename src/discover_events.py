@@ -30,14 +30,13 @@ for row in rows:
     if re.fullmatch(r"\d{1,2} [A-Za-z]{3} \d{4}",row_list[0]):
         start = datetime.strptime(row_list[0], "%d %b %Y")
         end = datetime.strptime(row_list[0], "%d %b %Y")
-        print(start, end)
+        #print(start, end)
     #date range but same month
     elif re.fullmatch(r"\d{1,2} - \d{1,2} [A-Za-z]{3} \d{4}", row_list[0]):
         parts = row_list[0].split(" - ")
         parts_2 = parts[1].split(" ",1)
         start = datetime.strptime(parts[0] + " " + parts_2[1], "%d %b %Y")
         end = datetime.strptime(parts[1], "%d %b %Y")
-        print(start, end)
     #date range but different month
     elif re.fullmatch(r"\d{1,2} [A-Za-z]{3} - \d{1,2} [A-Za-z]{3} \d{4}", row_list[0]):
         parts = row_list[0].split(" - ")
@@ -48,17 +47,28 @@ for row in rows:
         else:
             start = datetime.strptime(parts[0] + " " + parts_2[2], "%d %b %Y")
         end = datetime.strptime(parts[1], "%d %b %Y")
-        print(start, end)
     elif re.fullmatch(r"\d{4}", row_list[0]):
         start = None
         end = None
-        print(start,end)
+
+    #flag possible mistakes in the data
+    match = re.search(r"\d{4}", row_list[2])
+    if match:
+        year_from_name = int(match.group())
+    else:
+        year_from_name = None
+    if start and end:
+        if (start > end ):
+            print(f"{row_list[2]} , POSSIBLE ERROR")
+        if(((year_from_name != start.year) and (year_from_name != end.year)) and year_from_name):
+            print(f" WARNING :POSSIBLE ERROR, {row_list[2]}, {start}, {end}")
     competition = {
     "start_date" : start,
     "end_date" : end,
     "name" : row_list[2],
     "url"  : results_url
     }
+
     competitions.append(competition)
 #for i in range(len(competitions)):
     
